@@ -29,6 +29,9 @@ alias diff_orig="diff"
 alias diff="diff -i -w -y --suppress-common-lines"
 alias grep="grep --color=auto"
 
+# This is a handy little shortcut to tokenize a file; used at Miralaw
+alias tokenize="java -cp ~/Current/Stanford\ NLP/stanford-ner-2015-04-20/stanford-ner.jar edu.stanford.nlp.process.PTBTokenizer"
+
 alias work="~/.bash_scripts/work.sh"
 
 # For school
@@ -50,6 +53,36 @@ function compile_c () {
 
 function compile_java () {
   javac $1
+}
+
+# Function to setup a basic java project using gradle
+function java_init () {
+    gradle init
+    echo "// Apply the java plugin to add support for Java
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+// Set the name of the main class
+mainClassName = 'Main'
+
+// Define the repositories being used
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'edu.stanford.nlp:stanford-corenlp:3.5.1'
+    compile 'edu.stanford.nlp:stanford-corenlp:3.5.1:models'
+}" > build.gradle
+    mkdir src
+    mkdir src/main
+    mkdir src/main/java
+    echo "public class Main {
+    public static void main(String[] args) {
+    }   
+}" > src/main/java/Main.java
+    vim src/main/java/Main.java
 }
 
 

@@ -11,6 +11,10 @@
 "   earlier 1h : Goes back to the buffer as it was an hour ago
 " later : Goes forward to a count or time
 "
+"  Folds:
+"  zM = globally close all folds
+"  zR = globally open all folds
+"
 " These are some helpful tips for reformatting code: 
 
 " V=  - select text, then reformat with =
@@ -30,38 +34,47 @@
 " Plugins!
 call plug#begin('~/.vim/plugged')
 
-Plug 'https://github.com/Keithbsmiley/swift.vim.git'
+Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Syntax highlighter for Swift
+Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker
+Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
+Plug 'https://github.com/godlygeek/tabular' 
+
+" Options for commenting plugins:
+
+Plug 'scrooloose/nerdcommenter'
+"Plug 'https://github.com/tomtom/tcomment_vim.git'
+"Plug 'https://github.com/tpope/vim-commentary.git'
+
+Plug 'https://github.com/ervandew/supertab'
+
+"TODO: Plug 'https://github.com/tpope/vim-surround'
+"TODO: Plug 'https://github.com/tpope/vim-surround'
+"TODO: ECLIM
+"TODO: EMMET - Easy html population
+"TODO: Sleuth
+"Plug 'https://github.com/Valloric/YouCompleteMe.git', { 'do': './install.sh --clang-completer' } " Add fancy autocomplete
 
 call plug#end()
 
-:set ruler
+set ruler
 "execute pathogen#infect()
 syntax on
-"filetype plugin indent on
-"set nowrap
+set wrap " Change the DISPLAY of the text to wrap
 " This is awesome. Auto-wraps lines to 80
-set wrap
 set textwidth=80
-
 
 "set wrapmargin=0
 
 syntax on
 
-" If using a dark background within the editing area and syntax highlighting
-" turn on this option as well
-"set background=dark
-
-" Uncomment the following to have Vim jump to the last position when
-" reopening a file
 if has("autocmd")
+  " Vim jumps to the last position when reopening a file
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-endif
-
-" Uncomment the following to have Vim load indentation rules and plugins
-" according to the detected filetype.
-if has("autocmd")
+  " Automatically detect indentation rules and plugins
   filetype plugin indent on
+  au FileType python set textwidth=9999
+  " Format XML when it's the correct filetype
+  au FileType xml setlocal equalprg=xmllint\ --format\ --recover\ -\ 2>/dev/null
 endif
 
 " The following are commented out as they cause vim to behave a lot
@@ -72,7 +85,7 @@ set ignorecase    " Do case insensitive matching
 set smartcase   " Do smart case matching
 set incsearch   " Incremental search
 set autowrite   " Automatically save before commands like :next and :make
-set hidden             " Hide buffers when they are abandoned
+set hidden      " Hide buffers when they are abandoned
 "set mouse=a    " Enable mouse usage (all modes)
 
 " Make undos persistent "
@@ -84,10 +97,9 @@ set undoreload=10000
 
 set hlsearch
 
-" Source a global configuration file if available
-if filereadable("/etc/vim/vimrc.local")
-  source /etc/vim/vimrc.local
-endif
+" If we want the yank command to copy to the system clipboard:
+" set clipboard=unnamed,unnamedplus
+
 
 " TODO: Setup a GOOD colorscheme for both of these things!
 " Set colorscheme "
@@ -98,19 +110,17 @@ endif
 "  "colorscheme elflord
 "endif
 colorscheme ir_black
+" TODO: molokai for java and ruby
 
 " Set tab-settings
 
 set expandtab
-"set autoindent
-" set cindent
-set smartindent
+set autoindent " Better than smart / cindent
 
-" Not sure exactly how these all work yet
-" set softtabstop=4
-set shiftwidth=4
 " This makes it so that existing tabs look like 4 spaces
 set tabstop=4 
+set softtabstop=4
+set shiftwidth=4
 
 " Set it so that the cursor is always in the middle of the page vertically "
 set scrolloff=9999
@@ -120,7 +130,7 @@ set scrolloff=9999
 set sidescroll=1
 set sidescrolloff=15
 
-" Map some more handy navigation keys "
+" Map some navigation keys. This is where everyone else will start going crazy
 
 :map j <Left>
 :map k <Down>
@@ -149,8 +159,8 @@ ca W w !sudo tee "%"
 " Toggle textwidth
 :noremap <S-t> :call ToggleTextWidth()<CR>
 
-" Comment HTML
-:noremap <C-c> :call CommentHtml()<CR>
+" Toggle comments
+map <C-c> <plug>NERDCommenterInvert
 
 " Toggle paste setting
 :map <S-p> :set invpaste<CR>
@@ -175,21 +185,13 @@ set history=1000
 
 set title
 
-" This is supposed change % to match if/else/else if/endifs as well as ( )
+" Set up completion customization (Activate with ctrl-n)
+"set completeopt=longest,menuone
 
-"runtime /usr/share/vim/addons/plugin/matchit.vim
-
-" Bash-style completion
-"set wildmenu
-"set wildmode=list:longest
-
-"TODO: TEmp comment for current project: set number
+set number
 
 "set listchars=tab:>-,trail:·,eol:$
 nmap <silent> <F5> :set nolist!<CR>
-
-"set t_Co=256
-"let g:solarized_termcolors=256
 
 " Function to change all html codes into their symbol representatives "
 
@@ -252,7 +254,11 @@ function ToggleTextWidth()
         echom "Setting textwidth to 999"
         set textwidth=999
     endif
+    set ruler
 endfunction
+
+" Custom function to toggle HTML comments; shouldn't need now that we're using 
+" plugins
 
 function CommentHtml()
     let line=getline(".")
@@ -327,3 +333,44 @@ function Blogify()
     %s/$/<\/p>/
     %s/'/’/g
 endfunction
+
+function CleanData()
+    %s/('/\r\t(\r\t\t'/g
+    %s/),/\r\t),/g
+    %s/', '/'\r\t\t\t : '/g
+endfunction
+
+"  This is a function to replace all numbers (including words!) into "NORMALIZEDNUMBER".
+"  It was useful when trying to create a training data set for NLP at Miralaw
+function NormalizeNumbers()
+    " Decimal-based numbers:
+    %s/^\d\+\(,\d\+\)*\(\/\d\+\)*\(\.\d\+\)*\t/NORMALIZEDNUMBER\t/g
+    " Word-based numbers. Matches stuff like "seventeen" and "thirty-six"
+    %s/^\(\(twen\|thir\|for\|fif\|six\|seven\|eigh\|nine\)ty-\)\?\(zero\|one\|two\|three\|five\|ten\|eleven\|twelve\|\(\(thir\|fif\)\(ty\|teen\)\)\|\(four\|six\|seven\|nine\)\(ty\|teen\)\?\|eight\(y\|een\)\?\|twenty\|hundred\|thousand\|million\|billion\|trillion\)\t/NORMALIZEDNUMBER\t/gi
+endfunction
+
+function SetupAnnotation()
+    :diffthis
+    :vnew<CR>
+    s/^.*$/\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r----------/
+    set nonumber nowrap
+endfunction
+
+
+" Functiion to align the type of sentence to the left and normalize it. More Miralaw
+function AlignLeft()
+    %s/"\?\(.\{-}\)"\?\t\(.*\)/\2\t\1
+    %s/^Spousal Payment/SSP
+    %s/^Income/SALARY
+    %s/^Expenses/UNKNOWN
+    %s/^Shared Capital Assets/UNKNOWN
+    %s/^Personal Capital Assets/UNKNOWN
+    %s/^Debt/UNKNOWN
+    %s/^Unknown/UNKNOWN
+    %s/^Other/UNKNOWN
+endfunction
+
+" Source a global configuration file if available
+if filereadable("/etc/vim/vimrc.local")
+  source /etc/vim/vimrc.local
+endif
