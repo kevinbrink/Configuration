@@ -14,13 +14,23 @@
 "  Folds:
 "  zM = globally close all folds
 "  zR = globally open all folds
+"  zf = create a fold from selection
 "
-" These are some helpful tips for reformatting code: 
+" These are some helpful tips for reformatting code:
 
-" V=  - select text, then reformat with =
+" V=  - select text, then reformat with =. Fixes indentation
 " =   - will correct alignment of code
-" ==  - one line; 
-" gq  - reformat paragraph
+" ==  - one line;
+" gq  - reformat paragraph. Wraps liens to 80, etc.
+"
+" :0 put - puts the yanked text at the beginning of a file (line 0)
+"
+" :tabm [n] - move the tab to a place within the session
+"
+" :mksession session.vim - Makes a session, including yanked text and opened
+"                          files
+" :vim -S session.vim    - Reopens that session
+"
 " Options to change how automatic formatting is done:
 
 " :set formatoptions (default "tcq")
@@ -30,51 +40,96 @@
 "  - n - numbered lists
 "  - 2 - keep second line indent
 "  - 1 - single letter words on next line
+"
+" Moving around windows / tabs:
+"   -         tabm[#]: Moves a tab to a specific place within the current session
+"   - Ctrl-W + [HJKL]: Moves the window all the way left/down/up/right
+"
+"   To copy selected text to system clipboard:
+"       `:w !pbcopy`
 
 " Plugins!
 call plug#begin('~/.vim/plugged')
 
-Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Syntax highlighter for Swift
-Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker
+" Syntax highlighters: 
+Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Swift
+Plug 'https://github.com/kchmck/vim-coffee-script' " Coffeescript
+
+" Unfortunately, this plays around with the formatoptions, which tweaks our wrap
+" settings
+"Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
 Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
 Plug 'https://github.com/godlygeek/tabular' 
 
 " Options for commenting plugins:
 
 Plug 'scrooloose/nerdcommenter'
-"Plug 'https://github.com/tomtom/tcomment_vim.git'
-"Plug 'https://github.com/tpope/vim-commentary.git'
+Plug 'https://github.com/tomtom/tcomment_vim.git'
+Plug 'https://github.com/tpope/vim-commentary.git'
 
 Plug 'https://github.com/ervandew/supertab'
+
+" Ruby style guide
+Plug 'https://github.com/ngmy/vim-rubocop'
+" Handy rails shortucts
+Plug 'https://github.com/tpope/vim-rails'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
 "TODO: Plug 'https://github.com/tpope/vim-surround'
 "TODO: ECLIM
 "TODO: EMMET - Easy html population
 "TODO: Sleuth
+"TODO: Unimpaired
 "Plug 'https://github.com/Valloric/YouCompleteMe.git', { 'do': './install.sh --clang-completer' } " Add fancy autocomplete
 
 call plug#end()
 
+" Specific settings for syntastic; recommended settings:
+
+set statusline+=%#warningmsg#
+"set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+"let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+"let g:syntastic_haml_checkers = ['haml_lint']
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
 set ruler
 "execute pathogen#infect()
 syntax on
-set wrap " Change the DISPLAY of the text to wrap
+set nowrap " Change the DISPLAY of the text to wrap
 " This is awesome. Auto-wraps lines to 80
 set textwidth=80
 
 "set wrapmargin=0
 
-syntax on
+" This makes it so that existing tabs look like 4 spaces
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 
 if has("autocmd")
   " Vim jumps to the last position when reopening a file
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
   " Automatically detect indentation rules and plugins
-  filetype plugin indent on
+  " TODO: Is this any better? Doubt it filetype plugin indent on
   au FileType python set textwidth=9999
   " Format XML when it's the correct filetype
   au FileType xml setlocal equalprg=xmllint\ --format\ --recover\ -\ 2>/dev/null
+  " This will retain folds when re-opening. TODO: But doesn't work right now.
+  " Erg.
+  "autocmd BufWinLeave .* mkview
+  "autocmd BufWinEnter .* silent loadview 
+  au FileType ruby setl sw=2 sts=2 ts=2
+  au FileType haml setl sw=2 sts=2 ts=2
+  au FileType scss setl sw=2 sts=2 ts=2
+  au FileType coffee setl sw=2 sts=2 ts=2
+  au FileType yml setl sw=2 sts=2 ts=2
 endif
 
 " The following are commented out as they cause vim to behave a lot
@@ -97,6 +152,9 @@ set undoreload=10000
 
 set hlsearch
 
+" Don't save session options
+set ssop-=options
+
 " If we want the yank command to copy to the system clipboard:
 " set clipboard=unnamed,unnamedplus
 
@@ -117,11 +175,6 @@ colorscheme ir_black
 set expandtab
 set autoindent " Better than smart / cindent
 
-" This makes it so that existing tabs look like 4 spaces
-set tabstop=4 
-set softtabstop=4
-set shiftwidth=4
-
 " Set it so that the cursor is always in the middle of the page vertically "
 set scrolloff=9999
 
@@ -129,6 +182,9 @@ set scrolloff=9999
 
 set sidescroll=1
 set sidescrolloff=15
+
+" Keep folds
+set sessionoptions+=folds
 
 " Map some navigation keys. This is where everyone else will start going crazy
 
@@ -152,18 +208,25 @@ set sidescrolloff=15
 
 " This maps 'W' to saving with sudo
 
-ca W w !sudo tee "%"
+"ca W w !sudo tee "%"
 
 :noremap <F4> :set hlsearch! hlsearch?<CR>
 
 " Toggle textwidth
 :noremap <S-t> :call ToggleTextWidth()<CR>
 
+" Toggle indentation
+:noremap <S-y> :call ToggleIndent()<CR>
+
 " Toggle comments
 map <C-c> <plug>NERDCommenterInvert
 
+" Run rubocop (Miralaw)
+let g:vimrubocop_keymap = 0
+nmap -r :RuboCop<CR>
+
 " Toggle paste setting
-:map <S-p> :set invpaste<CR>
+:map <S-p> :call InvPaste()<CR>
 
 " Window-related shortcuts "
 
@@ -253,6 +316,18 @@ function ToggleTextWidth()
     else
         echom "Setting textwidth to 999"
         set textwidth=999
+    endif
+    set ruler
+endfunction
+
+" This function toggles the indentation between 4 and 2
+function ToggleIndent()
+    if &l:sw ># 2
+        echom "Setting indent to 2"
+        setl sw=2 sts=2 ts=2
+    else
+        echom "Setting indent to 4"
+        setl sw=4 sts=4 ts=4
     endif
     set ruler
 endfunction
@@ -370,7 +445,67 @@ function AlignLeft()
     %s/^Other/UNKNOWN
 endfunction
 
+" Function to take a table for child support calculation, and turn it into a CSV 
+" in the format:
+" Lower income bound    Base amount Percentage on > Lower Income Bound
+
+function CreateCSV()
+    %s/\s\+\(\d\+\)\s\+\(\d\+\.\d\+\)\s\+\(\d\+\)$/,\1,\2
+    %s/\(^\d\+\)[^,]*/\1
+endfunction
+
+function InvPaste()
+    if &l:paste == 0
+        " Currently off
+        set paste
+        echom "Setting paste to ON; formatoptions = " . &l:formatoptions
+    else
+        " Currently on
+        set nopaste
+        set fo=tcq " Need to reset format options
+        echom "Setting paste to OFF; formatoptions = " . &l:formatoptions
+    endif
+endfunction
+
+function HandleURI()
+    let s:uri = matchstr(getline("."), '[a-z]*:\/\/[^ >,;:]*')
+    echo s:uri
+    if s:uri != ""
+        exec "!open \"" . s:uri . "\""
+    else
+        echo "No URI found in line."
+    endif
+endfunction
+
+function ShowDiff()
+    :vnew<CR>
+    :read !git diff --cached
+    set syntax=git
+endfunction
+
+" Some misc stuff for Miralaw Project, under the resolve pillar, to update the
+" progress meters using javascript, when we are recording which fields impact
+" which forms, this helped me to format the yml file
+
+" Add the data attributes for impacted forms
+" :\(.*\)/:\1,\r                  input_html: { data: { previous_value: @divorce_application_form\.\1 || '',\r                                        impacted_forms: t('impacted_forms_for_field.\1') } }
+
+" Once we copy data from a spreadsheet into the yml file, this helps to
+" format it before calling "CleanYML"
+" \(\w\+\)\(.*\)/    \1:\r\2
+function CleanYML()
+    %s/−/-/g
+    %s/^-/      -/g
+    %s/\(\S\+\)-/\1\r      -/g
+endfunction
+
+
 " Source a global configuration file if available
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
+
+:highlight ExtraWhitespace ctermbg=red guibg=red
+:match ExtraWhitespace /\s\+$/
+
+set fo=tcq

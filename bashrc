@@ -1,7 +1,5 @@
 # TODO: Remove this? source /Users/kevyboy014/perl5/perlbrew/etc/bashrc
 
-PS1="\\[$(tput setaf 2)\\]\d|\$PWD:\\[$(tput sgr0)\\]"
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -17,14 +15,13 @@ case "$TERM" in
 esac
 
 alias vim='vim -p'
-alias vimdiff='vimdiff'
 alias gitstat='git status -uno --short | grep -Po "\S+$"' # This should print out ONLY the files that were changed; can then be pumped into vim or what have you
 alias gitdiff='git diff --color=always'
 alias gitvimdiff='git difftool --tool=vimdiff --no-prompt' # Shortcut to use vimdiff to view differences
 alias ls_orig="ls"
 alias ls="ls -laG"
 alias lt="ls -latG"
-alias locate="mdfind"
+#alias locate="mdfind"
 alias diff_orig="diff"
 alias diff="diff -i -w -y --suppress-common-lines"
 alias grep="grep --color=auto"
@@ -37,6 +34,11 @@ alias work="~/.bash_scripts/work.sh"
 # For school
 alias packetTrace='sudo tcpdump -i en1 -s 0 -B 524288 -w'
 alias readPacketTrace='tcpdump -s 0 -n -e -x -vvv -r'
+
+# Little function for git completion
+if [ -f ~/.git-completion.bash ]; then
+    . ~/.git-completion.bash
+fi
 
 # Function for vim; it checks to see if we should use sudo or not, and opens with multiple tabs
 
@@ -60,8 +62,6 @@ function java_init () {
     gradle init
     echo "// Apply the java plugin to add support for Java
 apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'idea'
 
 // Set the name of the main class
 mainClassName = 'Main'
@@ -72,8 +72,8 @@ repositories {
 }
 
 dependencies {
-    compile 'edu.stanford.nlp:stanford-corenlp:3.5.1'
-    compile 'edu.stanford.nlp:stanford-corenlp:3.5.1:models'
+    // Examples: 
+    //compile 'edu.stanford.nlp:stanford-corenlp:3.5.1'
 }" > build.gradle
     mkdir src
     mkdir src/main
@@ -136,3 +136,17 @@ dependencies {
 
 ### Added by the Heroku Toolbelt
 export PATH="/usr/local/heroku/bin:$PATH"
+
+### Added by me for the postgres commands
+export PATH="/Applications/Postgres.app/Contents/Versions/9.4/bin:$PATH"
+export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
+
+# Add git prompt
+source ~/.git-prompt.sh
+PS1="\\[$(tput setaf 2)\\]\d|\\w\\[$(tput sgr0)\\]\$(__git_ps1):"
+
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+
+# From Marc, for Docker stuff:
+eval "$(direnv hook $0)"
+export PATH="/usr/local/sbin:$PATH"

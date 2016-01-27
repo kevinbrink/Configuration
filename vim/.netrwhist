@@ -1,6 +1,7 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =4
-let g:netrw_dirhist_1='/usr/share/vim/vim73/syntax'
-let g:netrw_dirhist_2='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Data Extraction/nlp-experiments/java/MoneyExtraction/training'
-let g:netrw_dirhist_3='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Data Extraction/nlp-experiments/.git'
-let g:netrw_dirhist_4='/Users/Kevin/Sites/FellowshipBaptistChurch/wp-content/themes/landlr/css'
+let g:netrw_dirhist_cnt =5
+let g:netrw_dirhist_1='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Sites/thistoo/app/assets/stylesheets'
+let g:netrw_dirhist_2='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Sites/thistoo/app/assets/javascripts'
+let g:netrw_dirhist_3='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Sites/thistoo/app/assets/javascripts/modules'
+let g:netrw_dirhist_4='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Sites/thistoo/app/assets/javascripts'
+let g:netrw_dirhist_5='/Users/Kevin/Dropbox/Work/Miralaw/Projects/Sites/thistoo/app/assets/javascripts/controllers'
