@@ -51,15 +51,15 @@
 " Plugins!
 call plug#begin('~/.vim/plugged')
 
-" Syntax highlighters: 
+" Syntax highlighters:
 Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Swift
 Plug 'https://github.com/kchmck/vim-coffee-script' " Coffeescript
 
 " Unfortunately, this plays around with the formatoptions, which tweaks our wrap
 " settings
-"Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
+Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
 Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
-Plug 'https://github.com/godlygeek/tabular' 
+Plug 'https://github.com/godlygeek/tabular'
 
 " Options for commenting plugins:
 
@@ -87,14 +87,21 @@ call plug#end()
 " Specific settings for syntastic; recommended settings:
 
 set statusline+=%#warningmsg#
-"set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
 
 let g:syntastic_always_populate_loc_list = 1
-"let g:syntastic_auto_loc_list = 1
+let g:syntastic_auto_loc_list = 0
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
-"let g:syntastic_haml_checkers = ['haml_lint']
+let g:syntastic_mode_map = { "mode": "passive", "active_filetypes": [], "passive_filetypes": [] }
+let g:syntastic_haml_checkers = ['haml_lint']
+let g:syntastic_ruby_checkers = ['rubocop']
+
+" Skip to next error (Using syntastic)
+:map 'n :lnext <CR>
+:map 'N :lprevious <CR>
+:map 's :SyntasticCheck <CR>
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -112,6 +119,8 @@ set textwidth=80
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
+
+set lazyredraw " to avoid scrolling problems
 
 if has("autocmd")
   " Vim jumps to the last position when reopening a file
@@ -224,6 +233,9 @@ map <C-c> <plug>NERDCommenterInvert
 " Run rubocop (Miralaw)
 let g:vimrubocop_keymap = 0
 nmap -r :RuboCop<CR>
+
+" Diff all open windows in current tab
+nmap -d :call DiffAll()<CR>
 
 " Toggle paste setting
 :map <S-p> :call InvPaste()<CR>
@@ -491,14 +503,18 @@ endfunction
 " :\(.*\)/:\1,\r                  input_html: { data: { previous_value: @divorce_application_form\.\1 || '',\r                                        impacted_forms: t('impacted_forms_for_field.\1') } }
 
 " Once we copy data from a spreadsheet into the yml file, this helps to
-" format it before calling "CleanYML"
-" \(\w\+\)\(.*\)/    \1:\r\2
+" format it
 function CleanYML()
+    %s/\(\w\+\)\(.*\)/    \1:\r\2
     %s/−/-/g
     %s/^-/      -/g
     %s/\(\S\+\)-/\1\r      -/g
+    %s/^.*\(-.*\).*/      \1
 endfunction
 
+function DiffAll()
+    :windo diffthis
+endfunction
 
 " Source a global configuration file if available
 if filereadable("/etc/vim/vimrc.local")

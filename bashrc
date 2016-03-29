@@ -14,10 +14,11 @@ case "$TERM" in
     xterm-color) color_prompt=yes;;
 esac
 
+#alias vim='nvim -p'
 alias vim='vim -p'
 alias gitstat='git status -uno --short | grep -Po "\S+$"' # This should print out ONLY the files that were changed; can then be pumped into vim or what have you
 alias gitdiff='git diff --color=always'
-alias gitvimdiff='git difftool --tool=vimdiff --no-prompt' # Shortcut to use vimdiff to view differences
+alias gitvimdiff='git difftool --no-prompt' # Shortcut to use vimdiff to view differences
 alias ls_orig="ls"
 alias ls="ls -laG"
 alias lt="ls -latG"
@@ -144,8 +145,6 @@ export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
 # Add git prompt
 source ~/.git-prompt.sh
 PS1="\\[$(tput setaf 2)\\]\d|\\w\\[$(tput sgr0)\\]\$(__git_ps1):"
-
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
 
 # From Marc, for Docker stuff:
 eval "$(direnv hook $0)"
