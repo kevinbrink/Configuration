@@ -144,7 +144,7 @@ export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
 
 # Add git prompt
 source ~/.git-prompt.sh
-PS1="\[$(tput setaf 2)\]\d|\w\\[$(tput bold)\]\[$(__git_ps1)\]\[$(tput sgr0)\]:"
+PS1="\[$(tput setaf 2)\]\d|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
 
 # From Marc, for Docker stuff:
 eval "$(direnv hook $0)"
