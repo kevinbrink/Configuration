@@ -103,6 +103,9 @@ let g:syntastic_ruby_checkers = ['rubocop']
 :map 'N :lprevious <CR>
 :map 's :SyntasticCheck <CR>
 
+" Always split windows vertical when using Gdiff
+set diffopt+=vertical
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
@@ -161,6 +164,19 @@ set undoreload=10000
 
 set hlsearch
 
+" You can set up different colours for all sorts of different highlights here:
+highlight Search ctermbg=91 cterm=bold
+highlight DiffChange term=bold ctermbg=245
+highlight DiffAdd term=bold ctermbg=74 guibg=LightBlue
+highlight Visual term=standout ctermfg=4 ctermbg=248 guifg=DarkBlue guibg=Grey
+highlight CursorLine ctermbg=237 cterm=none
+" highlight ErrorMsg ctermbg=
+" highlight DiffAdd ctermbg=
+" highlight Todo ctermbg=
+
+" Highlight the current line
+set cul
+
 " Don't save session options
 set ssop-=options
 
@@ -176,8 +192,10 @@ set ssop-=options
 "  colorscheme evening
 "  "colorscheme elflord
 "endif
-colorscheme ir_black
+"colorscheme ir_black
 " TODO: molokai for java and ruby
+" NOTE: Instead, just use this terminal colorscheme:
+" https://github.com/lysyi3m/osx-terminal-themes/blob/master/schemes/Broadcast.terminal
 
 " Set tab-settings
 
