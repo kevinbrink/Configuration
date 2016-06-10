@@ -108,13 +108,15 @@ set diffopt+=vertical
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Global textwidth value
+let desired_text_width=100
 
 set ruler
 "execute pathogen#infect()
 syntax on
 set nowrap " Change the DISPLAY of the text to wrap
-" This is awesome. Auto-wraps lines to 80
-set textwidth=80
+" Auto-wrap lines
+let &textwidth=desired_text_width
 
 "set wrapmargin=0
 
@@ -142,6 +144,7 @@ if has("autocmd")
   au FileType scss setl sw=2 sts=2 ts=2
   au FileType coffee setl sw=2 sts=2 ts=2
   au FileType yml setl sw=2 sts=2 ts=2
+  au FileType rs set syntax=c
 endif
 
 " The following are commented out as they cause vim to behave a lot
@@ -170,12 +173,16 @@ highlight DiffChange term=bold ctermbg=245
 highlight DiffAdd term=bold ctermbg=74 guibg=LightBlue
 highlight Visual term=standout ctermfg=4 ctermbg=248 guifg=DarkBlue guibg=Grey
 highlight CursorLine ctermbg=237 cterm=none
+highlight ColorColumn ctermbg=236
 " highlight ErrorMsg ctermbg=
 " highlight DiffAdd ctermbg=
 " highlight Todo ctermbg=
 
 " Highlight the current line
 set cul
+
+" Highlight columns past the maximum column
+let &colorcolumn=join(range(desired_text_width + 1,999),",")
 
 " Don't save session options
 set ssop-=options
@@ -340,9 +347,9 @@ endfunction
 
 " This function toggles the textwidth between 80 and 999
 function ToggleTextWidth()
-    if &l:textwidth ># 81
-        echom "Setting textwidth to 80"
-        set textwidth=80
+    if &l:textwidth ># g:desired_text_width + 1
+        echom "Setting textwidth to " . g:desired_text_width
+        let &textwidth=g:desired_text_width
     else
         echom "Setting textwidth to 999"
         set textwidth=999
