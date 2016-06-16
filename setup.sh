@@ -14,3 +14,9 @@ chmod 777 ~/.vim/undo
 
 curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh > ~/.git-prompt.sh
 curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash > ~/.git-completion.bash
+
+# Set up CommandT
+cd ~/.vim/plugged/command-t/ruby/command-t
+ruby extconf.rb
+make
+
