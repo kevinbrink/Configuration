@@ -74,6 +74,11 @@ Plug 'https://github.com/ngmy/vim-rubocop'
 " Handy rails shortucts
 Plug 'https://github.com/tpope/vim-rails'
 Plug 'https://github.com/wincent/command-t'
+Plug 'https://github.com/mbbill/undotree'
+
+" Ctags made easy:
+Plug 'https://github.com/xolox/vim-easytags.git'
+Plug 'https://github.com/xolox/vim-misc.git'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
 "TODO: Plug 'https://github.com/tpope/vim-surround'
@@ -87,9 +92,14 @@ call plug#end()
 
 " Specific settings for syntastic; recommended settings:
 
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
+set statusline+=%#warningmsg#                 " Not even sure what this is
+set statusline+=%{SyntasticStatuslineFlag()}  " Syntastic error message
+set statusline+=%*                            " I think highlight to the end?
+set statusline+=%f                            " Relative path name
+set statusline+=%=                            " Start right-aligning things here
+set statusline+=%P\                             " Percentage through buffer
+set statusline+=%l\ %c                        " Line and column, respectively
+set laststatus=2                              " ALWAYS show statusline
 
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 0
@@ -103,6 +113,13 @@ let g:syntastic_ruby_checkers = ['rubocop']
 :noremap 'n :lnext <CR>
 :noremap 'N :lprevious <CR>
 :noremap 's :SyntasticCheck <CR>
+
+" Reset the default CommandT mappings
+let g:CommandTAcceptSelectionMap = '<C-t>'
+let g:CommandTAcceptSelectionTabMap = '<CR>'
+"let g:CommandTAcceptSelectionSplitMap = '<leader>s'
+"let g:CommandTAcceptSelectionVSplitMap = '<leader>n'
+let g:CommandTFileScanner = "git"
 
 " Always split windows vertical when using Gdiff
 set diffopt+=vertical
@@ -121,10 +138,10 @@ let &textwidth=desired_text_width
 
 "set wrapmargin=0
 
-" This makes it so that existing tabs look like 4 spaces
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+" This makes it so that existing tabs look like 2 spaces
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
 
 set lazyredraw " to avoid scrolling problems
 
@@ -146,7 +163,11 @@ if has("autocmd")
   au FileType coffee setl sw=2 sts=2 ts=2
   au FileType yml setl sw=2 sts=2 ts=2
   au FileType rs set syntax=c
+  au FileType js set sw=2 sts=2 ts=2
+  au FileType python set sw=4 sts=4 ts=4
 endif
+
+set noro
 
 " The following are commented out as they cause vim to behave a lot
 " differently from regular Vi. They are highly recommended though.
@@ -168,14 +189,30 @@ set undoreload=10000
 
 set hlsearch
 
+" Set up the short message system
+set shortmess=f  " Simple shortcut
+set shortmess+=l " Simple shortcut
+set shortmess+=n " Simple shortcut
+set shortmess+=x " Simple shortcut
+set shortmess+=t " Simple shortcut
+set shortmess+=T " Simple shortcut
+set shortmess+=o " Overwrite message for writing a file
+set shortmess+=O " Message for reading a file overwrites any previous message
+set shortmess+=A " Don't give the "ATTENTION" message when existing swap file
+
+" Nice tab-completion when opening files
+set wildmenu
+set wildmode=full
+
 " You can set up different colours for all sorts of different highlights here:
 highlight Search ctermbg=91 cterm=bold
-highlight DiffChange term=bold ctermbg=245
+highlight DiffChange term=bold ctermbg=234
 highlight DiffAdd term=bold ctermbg=74 guibg=LightBlue
 highlight Visual term=standout ctermfg=4 ctermbg=248 guifg=DarkBlue guibg=Grey
 highlight CursorLine ctermbg=237 cterm=none
 highlight ColorColumn ctermbg=236
 highlight MatchParen ctermbg=238
+highlight PmenuSel ctermfg=256 ctermbg=016
 " highlight ErrorMsg ctermbg=
 " highlight DiffAdd ctermbg=
 " highlight Todo ctermbg=
@@ -193,7 +230,6 @@ set ssop-=options
 " set clipboard=unnamed,unnamedplus
 
 
-" TODO: Setup a GOOD colorscheme for both of these things!
 " Set colorscheme "
 "if &diff
 "  colorscheme delek
@@ -202,7 +238,7 @@ set ssop-=options
 "  "colorscheme elflord
 "endif
 "colorscheme ir_black
-" TODO: molokai for java and ruby
+" TODO: molokai for java and ruby?
 " NOTE: Instead, just use this terminal colorscheme:
 " https://github.com/lysyi3m/osx-terminal-themes/blob/master/schemes/Broadcast.terminal
 
@@ -235,14 +271,14 @@ let mapleader = "\<Space>"
 
 " Have some tab-related shortcuts "
 
-:noremap <C-t> :tabnew<CR>
+":noremap <C-t> :tabnew<CR>
 :noremap <S-f> gT
 :noremap <S-j> gt
 
 " Shorcuts to save or quit "
 
-:noremap <C-q> :q<CR>
-:noremap <C-s> :w!<CR>
+" :noremap <C-q> :q<CR>
+" :noremap <C-s> :w!<CR>
 
 " This maps 'W' to saving with sudo
 
@@ -253,11 +289,14 @@ let mapleader = "\<Space>"
 " Toggle textwidth
 :noremap <S-t> :call ToggleTextWidth()<CR>
 
+"" Clear current search
+":nnoremap #space->c :let @/ = ""
+
 " Toggle indentation
 :noremap <S-y> :call ToggleIndent()<CR>
 
 " Toggle comments
-noremap <C-c> <plug>NERDCommenterInvert
+map <C-c> <plug>NERDCommenterInvert
 
 " Run rubocop (Miralaw)
 let g:vimrubocop_keymap = 0
@@ -307,9 +346,11 @@ function ToggleTextWidth()
     if &l:textwidth ># g:desired_text_width + 1
         echom "Setting textwidth to " . g:desired_text_width
         let &textwidth=g:desired_text_width
+        let &colorcolumn=join(range(g:desired_text_width + 1,999),",")
     else
         echom "Setting textwidth to 999"
         set textwidth=999
+        let &colorcolumn=join(range(999 + 1,999),",")
     endif
     set ruler
 endfunction
@@ -347,6 +388,14 @@ endfunction
 
 function DiffAll()
     :windo diffthis
+endfunction
+
+
+" Function to tidy up files such as HTML, XML, and JSON. Currently only supports HTML though:
+function Tidy()
+    " TODO: If filetype == html...
+    :s/<[^>]*>/\r&\r/g
+    :g/^$/d
 endfunction
 
 """ LEGACY, UN-USED (But maybe someday helpful?): """

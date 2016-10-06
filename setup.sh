@@ -20,3 +20,5 @@ cd ~/.vim/plugged/command-t/ruby/command-t
 ruby extconf.rb
 make
 
+# Set up ctags as well:
+./ctags/setup.sh
