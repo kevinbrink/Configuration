@@ -4,7 +4,5 @@
 	name = Kevin Brink
 [core]
 	editor = /usr/bin/vim
-[push]
-	default = simple
 [diff]
 	tool = vimdiff
