@@ -57,7 +57,11 @@ Plug 'https://github.com/kchmck/vim-coffee-script' " Coffeescript
 
 " Unfortunately, this plays around with the formatoptions, which tweaks our wrap
 " settings
-Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
+if v:version > 702
+  Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
+  " Ctags made easy:
+  Plug 'https://github.com/xolox/vim-easytags.git'
+endif
 Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
 Plug 'https://github.com/godlygeek/tabular'
 
@@ -76,8 +80,6 @@ Plug 'https://github.com/tpope/vim-rails'
 Plug 'https://github.com/wincent/command-t'
 Plug 'https://github.com/mbbill/undotree'
 
-" Ctags made easy:
-"Plug 'https://github.com/xolox/vim-easytags.git'
 Plug 'https://github.com/xolox/vim-misc.git'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
@@ -93,7 +95,9 @@ call plug#end()
 " Specific settings for syntastic; recommended settings:
 
 set statusline+=%#warningmsg#                 " Not even sure what this is
-set statusline+=%{SyntasticStatuslineFlag()}  " Syntastic error message
+if v:version > 702
+  set statusline+=%{SyntasticStatuslineFlag()}  " Syntastic error message
+endif
 set statusline+=%*                            " I think highlight to the end?
 set statusline+=%f                            " Relative path name
 set statusline+=%=                            " Start right-aligning things here
@@ -101,17 +105,19 @@ set statusline+=%P\                             " Percentage through buffer
 set statusline+=%l\ %c                        " Line and column, respectively
 set laststatus=2                              " ALWAYS show statusline
 
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 0
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
-let g:syntastic_haml_checkers = ['haml_lint']
-let g:syntastic_ruby_checkers = ['rubocop']
-let g:syntastic_python_checkers = ['flake8']
-let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps/flake8.config'
-let g:syntastic_javascript_checkers = ['eslint']
-let g:syntastic_javascript_eslint_exec = 'eslint_d'
+if v:version > 702
+  let g:syntastic_always_populate_loc_list = 1
+  let g:syntastic_auto_loc_list = 0
+  let g:syntastic_check_on_open = 1
+  let g:syntastic_check_on_wq = 0
+  let g:syntastic_haml_checkers = ['haml_lint']
+  let g:syntastic_javascript_checkers = ['eslint']
+  let g:syntastic_javascript_eslint_exec = 'eslint_d'
+  let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
+  let g:syntastic_python_checkers = ['flake8']
+  let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps/flake8.config'
+  let g:syntastic_ruby_checkers = ['rubocop']
+endif
 
 " Skip to next error (Using syntastic)
 :noremap 'n :lnext <CR>
@@ -193,13 +199,6 @@ set autowrite   " Automatically save before commands like :next and :make
 set hidden      " Hide buffers when they are abandoned
 "set mouse=a    " Enable mouse usage (all modes)
 
-" Make undos persistent "
-
-set undofile
-set undodir=~/.vim/undo/
-set undolevels=1000
-set undoreload=10000
-
 set hlsearch
 
 " Set up the short message system
@@ -232,9 +231,6 @@ highlight PmenuSel ctermfg=256 ctermbg=016
 
 " Highlight the current line
 set cul
-
-" Highlight columns past the maximum column
-let &colorcolumn=join(range(desired_text_width + 1,999),",")
 
 " Don't save session options
 set ssop-=options
@@ -359,10 +355,16 @@ function ToggleTextWidth()
     if &l:textwidth ># g:desired_text_width + 1
         echom "Setting textwidth to " . g:desired_text_width
         let &textwidth=g:desired_text_width
+        if v:version < 703
+          return
+        endif
         let &colorcolumn=join(range(g:desired_text_width + 1,999),",")
     else
         echom "Setting textwidth to 999"
         set textwidth=999
+        if v:version < 703
+          return
+        endif
         let &colorcolumn=join(range(999 + 1,999),",")
     endif
     set ruler
@@ -624,3 +626,18 @@ endif
 :match ExtraWhitespace /\s\+$/
 
 set fo=tcq
+
+" Items that require VIM 7.3 go down here:
+
+if v:version < 703
+  finish
+endif
+
+" Make undos persistent "
+set undofile
+set undodir=~/.vim/undo/
+set undolevels=1000
+set undoreload=10000
+
+" Highlight columns past the maximum column
+let &colorcolumn=join(range(desired_text_width + 1,999),",")
