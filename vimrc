@@ -77,7 +77,7 @@ Plug 'https://github.com/wincent/command-t'
 Plug 'https://github.com/mbbill/undotree'
 
 " Ctags made easy:
-Plug 'https://github.com/xolox/vim-easytags.git'
+"Plug 'https://github.com/xolox/vim-easytags.git'
 Plug 'https://github.com/xolox/vim-misc.git'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
@@ -105,9 +105,13 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 0
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
-let g:syntastic_mode_map = { "mode": "passive", "active_filetypes": [], "passive_filetypes": [] }
+let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
 let g:syntastic_haml_checkers = ['haml_lint']
 let g:syntastic_ruby_checkers = ['rubocop']
+let g:syntastic_python_checkers = ['flake8']
+let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps/flake8.config'
+let g:syntastic_javascript_checkers = ['eslint']
+let g:syntastic_javascript_eslint_exec = 'eslint_d'
 
 " Skip to next error (Using syntastic)
 :noremap 'n :lnext <CR>
@@ -121,13 +125,22 @@ let g:CommandTAcceptSelectionTabMap = '<CR>'
 "let g:CommandTAcceptSelectionVSplitMap = '<leader>n'
 let g:CommandTFileScanner = "git"
 
+" Set up netrw styles:
+let g:netrw_liststyle = 3
+let g:netrw_banner=0
+let g:netrw_browse_split = 4 " Probably want 3 instead
+
 " Always split windows vertical when using Gdiff
 set diffopt+=vertical
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Global textwidth value
-let desired_text_width=100
+if &diff
+  let desired_text_width=999
+else
+  let desired_text_width=100
+endif
 
 set ruler
 "execute pathogen#infect()
@@ -384,6 +397,7 @@ function ShowDiff()
     :vnew<CR>
     :read !git diff --cached
     set syntax=git
+    execute "normal! gg\<C-w>\<Right>ggC"
 endfunction
 
 function DiffAll()
