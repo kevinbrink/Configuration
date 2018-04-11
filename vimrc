@@ -54,13 +54,16 @@ call plug#begin('~/.vim/plugged')
 " Syntax highlighters:
 Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Swift
 Plug 'https://github.com/kchmck/vim-coffee-script' " Coffeescript
+Plug 'https://github.com/PProvost/vim-ps1.git'     " Powershell
+
+Plug 'https://github.com/chrisbra/csv.vim.git'     " CSV magic
 
 " Unfortunately, this plays around with the formatoptions, which tweaks our wrap
 " settings
 if v:version > 702
   Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
   " Ctags made easy:
-  Plug 'https://github.com/xolox/vim-easytags.git'
+  "Plug 'https://github.com/xolox/vim-easytags.git'
 endif
 Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
 Plug 'https://github.com/godlygeek/tabular'
@@ -81,6 +84,7 @@ Plug 'https://github.com/wincent/command-t'
 Plug 'https://github.com/mbbill/undotree'
 
 Plug 'https://github.com/xolox/vim-misc.git'
+Plug 'rust-lang/rust.vim'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
 "TODO: Plug 'https://github.com/tpope/vim-surround'
@@ -115,7 +119,7 @@ if v:version > 702
   let g:syntastic_javascript_eslint_exec = 'eslint_d'
   let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
   let g:syntastic_python_checkers = ['flake8']
-  let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps/flake8.config'
+  let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps-app/source/flake8.config'
   let g:syntastic_ruby_checkers = ['rubocop']
 endif
 
@@ -316,6 +320,7 @@ nnoremap -d :call DiffAll()<CR>
 
 " Toggle paste setting
 :noremap <S-p> :call InvPaste()<CR>
+:noremap <S-o> "0p
 
 " Window-related shortcuts "
 
@@ -412,6 +417,12 @@ function Tidy()
     " TODO: If filetype == html...
     :s/<[^>]*>/\r&\r/g
     :g/^$/d
+endfunction
+
+function MakeTransactionTestCase()
+    :%s/from django\.test import TestCase/from django.test import TransactionTestCase\rfrom common.config.models import GlobalSettings/
+    :%s/\(class.*\)(TestCase)/\1(TransactionTestCase)/
+    :%s/\(\s\+\)\(def set.*(self):\)/\1\2\r\1\1GlobalSettings.objects.set('WEATHER_SERVICE_TIMEOUT', 900)\rGlobalSettings.objects.set('LOG_SUCCESSFUL_RECORDS', False)/
 endfunction
 
 """ LEGACY, UN-USED (But maybe someday helpful?): """

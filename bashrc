@@ -1,5 +1,3 @@
-# TODO: Remove this? source /Users/kevyboy014/perl5/perlbrew/etc/bashrc
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -46,6 +44,135 @@ fi
 function custom_vim () {
     # TODO Need to check here for if we need sudo
     vim -p $@
+}
+
+##### DOCKER ######
+
+# Docker-related shortcut functions
+
+# Open bash to web
+function docker_web () {
+  docker exec -it `docker ps -alq -f "name=web"` bash
+}
+
+# Open bash to postgres
+function docker_postgres () {
+  docker exec -it $(docker ps -alq -f "name=postgres") bash
+}
+
+function docker_rmi () {
+  IMAGE_NAME=$1
+  docker images -q | while read IMAGE_ID; do
+    if [[ $(docker inspect --format='{{.RepoDigests}}' $IMAGE_ID) == *"$IMAGE_NAME"* ]]; then
+      docker rmi -f $IMAGE_ID
+    elif [[ $(docker inspect --format='{{.RepoTags}}' $IMAGE_ID) == *"$IMAGE_NAME"* ]]; then
+      docker rmi -f $IMAGE_ID
+    fi
+  done
+}
+
+function local_swarm_setup () {
+  set -e
+  # Set up a local swarm using docker-machine.
+  # Uses your local machine as the primary manager node inside the swarm, and creates a few `docker-machine` nodes to serve in various other roles
+  echo -n "Creating machines... "
+  NODES=(primary-manager worker db-primary db-secondary)
+  for NODE in ${NODES[@]}; do
+    if [ -n "$(docker-machine ls -q | grep $NODE)" ]; then
+      echo "Node \"$NODE\" already exists; skipping..."
+      continue
+    fi
+    docker-machine create --driver xhyve $NODE
+  done
+  echo "Done."
+
+  echo -n "Creating swarm on primary-manager node... "
+  docker-machine ssh primary-manager docker swarm init --advertise-addr eth0:2377 || true
+  echo "Done."
+
+  JOIN_COMMAND=$(docker-machine ssh primary-manager docker swarm join-token worker | awk 'FNR == 3')
+
+  #echo -n "Setting up local machine as manager in the swarm... "
+  #$JOIN_COMMAND
+
+  #docker-machine ssh primary-manager docker node promote moby
+  #sleep 1
+  #docker node update --label-add role=secondary_manager moby
+  #echo "Done."
+
+  echo -n "Setting up other nodes; joining swarm, updating labels... "
+  for NODE in ${NODES[@]}; do
+    docker-machine ssh $NODE $JOIN_COMMAND || true
+    docker-machine ssh primary-manager docker node update --label-add role="$NODE" $NODE
+  done
+  echo "Done."
+  echo "Here's the current swarm:"
+  docker node ls
+}
+
+##### CFPS ######
+
+function cfps_init () {
+  set -e
+  sudo ./cfps_init.sh
+  cfps image --build
+  cfps build initialize_db
+  cfps build taser all
+  cfps build libwxapi
+  cfps build lightning
+  cfps build less
+}
+
+function cfps_pull () {
+  git checkout develop &&
+  git pull &&
+  cfps compose down &&
+  cfps image --build &&
+  cfps build libwxapi &&
+  cfps build lightning &&
+  cfps compose -sv up -d aftn balancer cache db_pool db_primary db_secondary lightning metpxfeed proxy queue_primary weather weather_worker web web_worker websocket &&
+  cfps web migrate &&
+  cfps weather migrate
+}
+
+function cfps_create_weather () {
+  cfps weather direct create_datalayers
+  cfps weather direct create_datalink_stations_and_outages
+  cfps weather direct create_intersections
+  cfps weather direct create_lightning
+  cfps weather direct create_metars
+  cfps weather direct create_nattracks
+  cfps weather direct create_pireps
+  cfps weather direct create_sigmets
+  cfps weather direct create_tafs
+  cfps weather direct create_upper_wind
+}
+
+function cfps_time_fresh_image_build () {
+	cfps compose down
+	docker container prune -f
+	docker rmi -f $(docker images -q)
+	time cfps image --build
+  docker images --format "{{.Size}}" --filter "reference=cfps/*1.0"
+}
+
+##### VMWare ######
+
+function command_vms() {
+  COMMAND=$1
+  VM_LOCATION="~/VMware/VM\'s/"
+  shift
+  while :; do
+    case $1 in
+      "")
+        break
+      ;;
+      *)
+        /Applications/VMware\ Fusion.app/Contents/Library/vmrun $COMMAND ~/VMware/VM\'s/$1.vmwarevm
+      ;;
+    esac
+    shift
+  done
 }
 
 # Functions for compiling various languages:
@@ -144,8 +271,6 @@ export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
 
 # Add git prompt
 source ~/.git-prompt.sh
-PS1="\[$(tput setaf 2)\]\d|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
+PS1="\[$(tput setaf 2)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
 
-# From Marc, for Docker stuff:
-eval "$(direnv hook $0)"
 export PATH="/usr/local/sbin:$PATH"
