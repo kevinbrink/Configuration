@@ -156,6 +156,31 @@ function cfps_time_fresh_image_build () {
   docker images --format "{{.Size}}" --filter "reference=cfps/*1.0"
 }
 
+function prettier_cfps () {
+  if [ $# -eq 0 ]
+    then
+      action='--list-different'
+  else
+    action=$1
+  fi
+  cfps compose run debug_react prettier $action src/**/*.{js,css}
+}
+
+function flake8_docker () {
+  existing=$(docker ps --filter name=flake8 -q)
+  # If we don't have one yet
+  if [ -z $existing ]; then
+    docker run --entrypoint bash -d --name flake8 -v $(pwd):/target -v /Users/Kevin/Code/cfps-app/source/flake8.config:/flake8.config flake8
+  fi
+  docker exec -it $(docker ps -q --filter name=flake8) flake8 --config /flake8.config $@
+}
+
+function create_ramdisk () {
+  # This creates a 4GB ramdisk called "ram_disk"
+  diskutil erasevolume HFS+ 'ram_disk' `hdiutil attach -nomount ram://8388608`
+  mkdir /Volumes/ram_disk/data
+}
+
 ##### VMWare ######
 
 function command_vms() {
@@ -274,3 +299,4 @@ source ~/.git-prompt.sh
 PS1="\[$(tput setaf 2)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
 
 export PATH="/usr/local/sbin:$PATH"
+eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"

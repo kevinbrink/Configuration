@@ -1,6 +1,6 @@
 " This is the vimrc of Kevin Brink. It sets up my happy settings, but isn't for
 " the faint of heart; it does some crazy things, like remapping your navigation
-" keys! 
+" keys!
 
 " This is just a good spot to dump some vim shortcuts that I have to keep looking up:
 " g- : When working with vim undo branches, this goes to the last change,
@@ -47,6 +47,12 @@
 "
 "   To copy selected text to system clipboard:
 "       `:w !pbcopy`
+"
+" # How to use mapping:
+" * map = map this key, but *use recursive evaluation*
+" * noremap = map this key, but *don't use recursive evaluation*. Use this basically always
+"
+" * Type :help map-overview for what all the modes are
 
 " Plugins!
 call plug#begin('~/.vim/plugged')
@@ -55,6 +61,8 @@ call plug#begin('~/.vim/plugged')
 Plug 'https://github.com/Keithbsmiley/swift.vim.git' " Swift
 Plug 'https://github.com/kchmck/vim-coffee-script' " Coffeescript
 Plug 'https://github.com/PProvost/vim-ps1.git'     " Powershell
+Plug 'https://github.com/pangloss/vim-javascript.git' " Babel, jsx
+Plug 'https://github.com/mxw/vim-jsx.git'
 
 Plug 'https://github.com/chrisbra/csv.vim.git'     " CSV magic
 
@@ -84,6 +92,7 @@ Plug 'https://github.com/wincent/command-t'
 Plug 'https://github.com/mbbill/undotree'
 
 Plug 'https://github.com/xolox/vim-misc.git'
+Plug 'https://github.com/vim-scripts/LargeFile.git'
 Plug 'rust-lang/rust.vim'
 
 "TODO: Plug 'https://github.com/tpope/vim-surround'
@@ -108,6 +117,7 @@ set statusline+=%=                            " Start right-aligning things here
 set statusline+=%P\                             " Percentage through buffer
 set statusline+=%l\ %c                        " Line and column, respectively
 set laststatus=2                              " ALWAYS show statusline
+set backspace=2
 
 if v:version > 702
   let g:syntastic_always_populate_loc_list = 1
@@ -116,7 +126,8 @@ if v:version > 702
   let g:syntastic_check_on_wq = 0
   let g:syntastic_haml_checkers = ['haml_lint']
   let g:syntastic_javascript_checkers = ['eslint']
-  let g:syntastic_javascript_eslint_exec = 'eslint_d'
+  "let g:syntastic_javascript_eslint_exec = 'eslint_d'
+  "let g:syntastic_javascript_eslint_args='-c /Users/Kevin/.map_eslintrc'
   let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
   let g:syntastic_python_checkers = ['flake8']
   let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps-app/source/flake8.config'
@@ -186,7 +197,7 @@ if has("autocmd")
   au FileType coffee setl sw=2 sts=2 ts=2
   au FileType yml setl sw=2 sts=2 ts=2
   au FileType rs set syntax=c
-  au FileType js set sw=2 sts=2 ts=2
+  au FileType js set sw=4 sts=4 ts=4
   au FileType python set sw=4 sts=4 ts=4
 endif
 
@@ -288,10 +299,14 @@ let mapleader = "\<Space>"
 :noremap <S-f> gT
 :noremap <S-j> gt
 
-" Shorcuts to save or quit "
+" Shorcuts to save, copy, or quit
+" Note that this magic probably relies on whatever maddness 'Command-T' does to make <Space> behave
+" like a modifier key. Probably won't work without that, I'd guess
 
-" :noremap <C-q> :q<CR>
-" :noremap <C-s> :w!<CR>
+" Copy probably only works on Mac...
+:noremap <Space>f :w !pbcopy<CR><CR>
+:noremap <Space>j :w<CR>
+:noremap <Space>q :q<CR>
 
 " This maps 'W' to saving with sudo
 
@@ -329,6 +344,10 @@ nnoremap -d :call DiffAll()<CR>
 :noremap <silent> <C-l> <c-w><Up>
 :noremap <silent> <C-f> <c-w><Left>
 :noremap <silent> <C-j> <c-w><Right>
+:tnoremap <silent> <C-k> <c-w><Down>
+:tnoremap <silent> <C-l> <c-w><Up>
+:tnoremap <silent> <C-f> <c-w><Left>
+:tnoremap <silent> <C-j> <c-w><Right>
 
 " Resizing windows. "
 
@@ -355,7 +374,7 @@ set number
 
 """ USED FUNCTIONS: """
 
-" This function toggles the textwidth between 80 and 999
+ "This function toggles the textwidth between 80 and 999
 function ToggleTextWidth()
     if &l:textwidth ># g:desired_text_width + 1
         echom "Setting textwidth to " . g:desired_text_width
@@ -419,10 +438,8 @@ function Tidy()
     :g/^$/d
 endfunction
 
-function MakeTransactionTestCase()
-    :%s/from django\.test import TestCase/from django.test import TransactionTestCase\rfrom common.config.models import GlobalSettings/
-    :%s/\(class.*\)(TestCase)/\1(TransactionTestCase)/
-    :%s/\(\s\+\)\(def set.*(self):\)/\1\2\r\1\1GlobalSettings.objects.set('WEATHER_SERVICE_TIMEOUT', 900)\rGlobalSettings.objects.set('LOG_SUCCESSFUL_RECORDS', False)/
+function JMeterThat()
+    :%s/\([^:]\+\): \(.*\)$/              <elementProp name="\1" elementType="HTTPArgument">\r                <boolProp name="HTTPArgument.always_encode">false<\/boolProp>\r                <stringProp name="Argument.value">\2<\/stringProp>\r                <stringProp name="Argument.metadata">=<\/stringProp>\r                <boolProp name="HTTPArgument.use_equals">true<\/boolProp>\r                <stringProp name="Argument.name">\1<\/stringProp>\r              <\/elementProp>
 endfunction
 
 """ LEGACY, UN-USED (But maybe someday helpful?): """
@@ -652,3 +669,5 @@ set undoreload=10000
 
 " Highlight columns past the maximum column
 let &colorcolumn=join(range(desired_text_width + 1,999),",")
+
+let g:LargeFile=10
