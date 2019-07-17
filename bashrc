@@ -156,6 +156,22 @@ function cfps_time_fresh_image_build () {
   docker images --format "{{.Size}}" --filter "reference=cfps/*1.0"
 }
 
+function create_ramdisk () {
+  sudo mount -t tmpfs -o size=2048M tmpfs /mnt/ramdisk
+  sudo mkdir -p /mnt/ramdisk/cfps
+}
+
+function prettier_cfps () {
+  if [ $# -eq 0 ]
+    then
+      action='--list-different'
+  else
+    action=$1
+  fi
+  cfps compose run debug_react prettier $action src/**/*.{js,css}
+}
+
+
 ##### VMWare ######
 
 function command_vms() {
@@ -271,6 +287,6 @@ export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
 
 # Add git prompt
 source ~/.git-prompt.sh
-PS1="\[$(tput setaf 2)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
+PS1="\[$(tput setaf 23)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
 
 export PATH="/usr/local/sbin:$PATH"

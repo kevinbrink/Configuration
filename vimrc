@@ -117,9 +117,11 @@ if v:version > 702
   let g:syntastic_haml_checkers = ['haml_lint']
   let g:syntastic_javascript_checkers = ['eslint']
   let g:syntastic_javascript_eslint_exec = 'eslint_d'
+  "let g:syntastic_javascript_eslint_args='-c /Users/Kevin/.map_eslintrc'
   let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
   let g:syntastic_python_checkers = ['flake8']
-  let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps-app/source/flake8.config'
+  let g:syntastic_flake8_exec = '/usr/bin/python3'
+  let g:syntastic_python_flake8_args='/usr/bin/flake8 --config=/home/cfps/Code/cfps-app/source/flake8.config'
   let g:syntastic_ruby_checkers = ['rubocop']
 endif
 
