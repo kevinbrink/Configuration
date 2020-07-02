@@ -126,12 +126,16 @@ if v:version > 702
   let g:syntastic_check_on_wq = 0
   let g:syntastic_haml_checkers = ['haml_lint']
   let g:syntastic_javascript_checkers = ['eslint']
-  "let g:syntastic_javascript_eslint_exec = 'eslint_d'
+  let g:syntastic_javascript_eslint_exec = 'eslint_d'
   "let g:syntastic_javascript_eslint_args='-c /Users/Kevin/.map_eslintrc'
   let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
   let g:syntastic_python_checkers = ['flake8']
   let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps-app/source/flake8.config'
   let g:syntastic_ruby_checkers = ['rubocop']
+
+
+  " see :h syntastic-config-makeprg
+  "let g:syntastic_java_javac_
 endif
 
 " Skip to next error (Using syntastic)
@@ -169,6 +173,7 @@ syntax on
 set nowrap " Change the DISPLAY of the text to wrap
 " Auto-wrap lines
 let &textwidth=desired_text_width
+set display+=lastline
 
 "set wrapmargin=0
 
@@ -178,6 +183,8 @@ set softtabstop=2
 set shiftwidth=2
 
 set lazyredraw " to avoid scrolling problems
+
+set title
 
 if has("autocmd")
   " Vim jumps to the last position when reopening a file
@@ -199,6 +206,18 @@ if has("autocmd")
   au FileType rs set syntax=c
   au FileType js set sw=4 sts=4 ts=4
   au FileType python set sw=4 sts=4 ts=4
+  au FileType markdown set wrap lbr nolist
+  au FileType markdown noremap k gj
+  au FileType markdown noremap l gk
+  au FileType markdown noremap 0 g^
+  au FileType markdown noremap $ g$
+  au FileType markdown set nonumber
+  au FileType markdown set tw=999
+  " Make the terminal display what we're doing depending on what kind of file we have open
+  au FileType * set titlestring=Editor
+  au FileType markdown set titlestring=Notes
+  au FileType markdown let &colorcolumn=join(range(999 + 1,999),",")
+  au FileType java set sw=4 ts=4 sts=4
 endif
 
 set noro
@@ -306,7 +325,10 @@ let mapleader = "\<Space>"
 " Copy probably only works on Mac...
 :noremap <Space>f :w !pbcopy<CR><CR>
 :noremap <Space>j :w<CR>
-:noremap <Space>q :q<CR>
+" We want to delete the buffer instead of _just_ closing the file. This cleans up swap files at the
+" same time (I think)
+:noremap <Space>q :bdelete<CR>
+:noremap <Space>g :call GetSet()<CR>
 
 " This maps 'W' to saving with sudo
 
@@ -362,12 +384,13 @@ nnoremap <silent> <F5> :set nolist!<CR>
 " Stolen from Yanick's configuration: "
 set history=1000
 
-set title
-
 " Set up completion customization (Activate with ctrl-n)
 "set completeopt=longest,menuone
 
 set number
+
+" Reload files whose mode has changed
+set autoread
 
 
 """ FUNCTIONS: """
@@ -440,6 +463,15 @@ endfunction
 
 function JMeterThat()
     :%s/\([^:]\+\): \(.*\)$/              <elementProp name="\1" elementType="HTTPArgument">\r                <boolProp name="HTTPArgument.always_encode">false<\/boolProp>\r                <stringProp name="Argument.value">\2<\/stringProp>\r                <stringProp name="Argument.metadata">=<\/stringProp>\r                <boolProp name="HTTPArgument.use_equals">true<\/boolProp>\r                <stringProp name="Argument.name">\1<\/stringProp>\r              <\/elementProp>
+endfunction
+
+function GetSet()
+    ":g/private \([^ ]\+\) \(m_\)\?\(\w\+\)\(.*\);\(.*\)/private \1 \2\3\4;\5\r\r    public \1 get\u\3() {\r        return \2\3;\r    }\r\r    public void set\u\3(\1 \2\3) {\r        this.\2\3 = \2\3;\r    }
+    :s/private \([^ ]\+\) \(m_\)\?\(\w\+\)\(.*\);\(.*\)/private \1 \2\3\4;\5\r\r    public \1 get\u\3() {\r        return \2\3;\r    }\r\r    public void set\u\3(\1 \2\3) {\r        this.\2\3 = \2\3;\r    }
+endfunction
+
+function CloseRight()
+    .+1,$tabdo :q
 endfunction
 
 """ LEGACY, UN-USED (But maybe someday helpful?): """
