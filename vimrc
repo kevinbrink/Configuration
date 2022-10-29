@@ -65,14 +65,8 @@ Plug 'https://github.com/pangloss/vim-javascript.git' " Babel, jsx
 Plug 'https://github.com/mxw/vim-jsx.git'
 
 Plug 'https://github.com/chrisbra/csv.vim.git'     " CSV magic
+Plug 'morhetz/gruvbox'
 
-" Unfortunately, this plays around with the formatoptions, which tweaks our wrap
-" settings
-if v:version > 702
-  Plug 'https://github.com/scrooloose/syntastic.git' " Syntax checker.
-  " Ctags made easy:
-  "Plug 'https://github.com/xolox/vim-easytags.git'
-endif
 Plug 'https://github.com/tpope/vim-fugitive.git' " Git commands
 Plug 'https://github.com/godlygeek/tabular'
 
@@ -88,7 +82,9 @@ Plug 'https://github.com/ervandew/supertab'
 Plug 'https://github.com/ngmy/vim-rubocop'
 " Handy rails shortucts
 Plug 'https://github.com/tpope/vim-rails'
-Plug 'https://github.com/wincent/command-t'
+Plug 'wincent/command-t', {
+  \   'do': 'cd ruby/command-t/ext/command-t && rbenv global 3.0.1-p64 && ruby extconf.rb && make'
+  \ }
 Plug 'https://github.com/mbbill/undotree'
 
 Plug 'https://github.com/xolox/vim-misc.git'
@@ -108,9 +104,6 @@ call plug#end()
 " Specific settings for syntastic; recommended settings:
 
 set statusline+=%#warningmsg#                 " Not even sure what this is
-if v:version > 702
-  set statusline+=%{SyntasticStatuslineFlag()}  " Syntastic error message
-endif
 set statusline+=%*                            " I think highlight to the end?
 set statusline+=%f                            " Relative path name
 set statusline+=%=                            " Start right-aligning things here
@@ -119,29 +112,9 @@ set statusline+=%l\ %c                        " Line and column, respectively
 set laststatus=2                              " ALWAYS show statusline
 set backspace=2
 
-if v:version > 702
-  let g:syntastic_always_populate_loc_list = 1
-  let g:syntastic_auto_loc_list = 0
-  let g:syntastic_check_on_open = 1
-  let g:syntastic_check_on_wq = 0
-  let g:syntastic_haml_checkers = ['haml_lint']
-  let g:syntastic_javascript_checkers = ['eslint']
-  let g:syntastic_javascript_eslint_exec = 'eslint_d'
-  "let g:syntastic_javascript_eslint_args='-c /Users/Kevin/.map_eslintrc'
-  let g:syntastic_mode_map = { "mode": "active", "active_filetypes": [], "passive_filetypes": [] }
-  let g:syntastic_python_checkers = ['flake8']
-  let g:syntastic_python_flake8_args='--config=/Users/Kevin/Code/cfps-app/source/flake8.config'
-  let g:syntastic_ruby_checkers = ['rubocop']
-
-
-  " see :h syntastic-config-makeprg
-  "let g:syntastic_java_javac_
-endif
-
 " Skip to next error (Using syntastic)
 :noremap 'n :lnext <CR>
 :noremap 'N :lprevious <CR>
-:noremap 's :SyntasticCheck <CR>
 
 " Reset the default CommandT mappings
 let g:CommandTAcceptSelectionMap = '<C-t>'
@@ -156,7 +129,10 @@ let g:netrw_banner=0
 let g:netrw_browse_split = 4 " Probably want 3 instead
 
 " Always split windows vertical when using Gdiff
-set diffopt+=vertical
+if &diff
+	set diffopt-=internal
+	set diffopt+=vertical
+endif
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -218,6 +194,7 @@ if has("autocmd")
   au FileType markdown set titlestring=Notes
   au FileType markdown let &colorcolumn=join(range(999 + 1,999),",")
   au FileType java set sw=4 ts=4 sts=4
+  autocmd vimenter * ++nested colorscheme gruvbox
 endif
 
 set noro
@@ -284,6 +261,8 @@ set ssop-=options
 " TODO: molokai for java and ruby?
 " NOTE: Instead, just use this terminal colorscheme:
 " https://github.com/lysyi3m/osx-terminal-themes/blob/master/schemes/Broadcast.terminal
+
+set background=dark
 
 " Set tab-settings
 
@@ -472,6 +451,14 @@ endfunction
 
 function CloseRight()
     .+1,$tabdo :q
+endfunction
+
+function RevelationClean()
+  %s/^$\n//g
+  %s/^\s\+\(\d\)/Revelation \1/g
+  %s/^\s\+//g
+  %s/Revelation\s\+/Revelation /g
+  %s/Revelation \(\S\+\)\s*/Revelation \1\t/g
 endfunction
 
 """ LEGACY, UN-USED (But maybe someday helpful?): """
