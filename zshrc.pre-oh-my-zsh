@@ -1,0 +1,37 @@
+# Better zsh history: https://www.soberkoder.com/better-zsh-history/
+export HISTFILE=~/.zsh_history
+export HISTFILESIZE=1000000000
+export HISTSIZE=1000000000
+setopt INC_APPEND_HISTORY
+export HISTTIMEFORMAT="[%F %T] "
+setopt EXTENDED_HISTORY
+setopt HIST_FIND_NO_DUPS
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+#alias vim='nvim -p'
+alias vim='vim -p'
+alias gitstat='git status -uno --short | grep -Po "\S+$"' # This should print out ONLY the files that were changed; can then be pumped into vim or what have you
+alias gitdiff='git diff --color=always'
+alias gitvimdiff='git difftool --no-prompt' # Shortcut to use vimdiff to view differences
+alias ls_orig="ls"
+alias ls="ls -laG"
+alias lt="ls -latG"
+#alias locate="mdfind"
+alias diff_orig="diff"
+alias diff="diff -i -w -y --suppress-common-lines"
+alias grep="grep --color=auto"
+
+# Add git prompt
+source ~/.git-prompt.sh
+#PS1="\[$(tput setaf 2)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
+setopt PROMPT_SUBST
+# TODO: Add in colours / bolding
+PROMPT='[%T] %~$(__git_ps1 " (%s)"): '
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+eval "$(rbenv init - zsh)"

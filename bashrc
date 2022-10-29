@@ -287,16 +287,6 @@ dependencies {
 #fi
 #unset color_prompt force_color_prompt
 
-### Added by the Heroku Toolbelt
-export PATH="/usr/local/heroku/bin:$PATH"
-
-### Added by me for the postgres commands
-export PATH="/Applications/Postgres.app/Contents/Versions/9.4/bin:$PATH"
-export PGDATA="/Users/Kevin/Library/Application Support/Postgres/var-9.4"
-
 # Add git prompt
 source ~/.git-prompt.sh
 PS1="\[$(tput setaf 2)\]\D{%a %m %d %I:%M}|\w\\[$(tput bold)\]\$(__git_ps1)\[$(tput sgr0)\]:"
-
-export PATH="/usr/local/sbin:$PATH"
-eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"
