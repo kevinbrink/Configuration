@@ -1,6 +1,6 @@
 # Configuration
 
-Some of my configuration files, primarily to set up my `bash` and `vim` environments how I like them. 
+Some of my configuration files, primarily to set up my `zshrc` and `vim` environments how I like them. 
 
 If you want to set everything up, you should be able to just clone the repo and then run `./setup.sh`. The last few lines of the `setup.sh` require things like `make` and `ruby` to set up [Command T](https://github.com/wincent/command-t), and the last line does some setup for [C Tags](https://en.wikipedia.org/wiki/Ctags). I never really got into the habit of using c-tags (so maybe I should remove that line 🤔), but I highly recommend playing around with Command T. Makes finding and opening up files nice and super fast 🏃‍♂️
 
